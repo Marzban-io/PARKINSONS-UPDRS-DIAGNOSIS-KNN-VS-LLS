@@ -1,31 +1,46 @@
-# Parkinson's Disease UPDRS Regression Analysis
+# Parkinson's UPDRS Prediction: Comparing Regression Approaches
 
-This project explores different regression techniques to predict the Total Unified Parkinson's Disease Rating Scale (UPDRS) score using a dataset of voice measurements from individuals with Parkinson's disease. The primary goal is to compare a K-Nearest Neighbors based Linear Least Squares (K-NN LLS) approach with a standard Linear Least Squares (LLS) model.
+This project explores and compares two different regression approaches for predicting the total Unified Parkinson's Disease Rating Scale (UPDRS) score using the Parkinsons Telemonitoring Data Set from the UCI Machine Learning Repository.
 
-## Main Goal
+## Dataset
 
-The main objective is to investigate whether a locally adaptive regression model (K-NN LLS), which tailors its predictions based on the nearest neighbors of a given test point, can outperform a global standard LLS model in predicting the `total_UPDRS` score. The validation set plays a crucial role in tuning the hyperparameter K for the K-NN LLS approach.
+The dataset used is `parkinsons_updrs_av.csv`. It contains various speech signal processing features and demographic data for individuals, along with their motor UPDRS and total UPDRS scores.
+- **Source:** [UCI Machine Learning Repository: Parkinsons Telemonitoring Data Set](https://archive.ics.uci.edu/dataset/189/parkinsons+telemonitoring)
+- **Citation:** A Tsanas, MA Little, PE McSharry, LO Ramig (2009)
+'Accurate telemonitoring of Parkinson's disease progression by non-invasive speech tests',
+IEEE Transactions on Biomedical Engineering.
 
-## Project Overview
+**Ensure the `parkinsons_updrs_av.csv` file is present in the same directory as the Python script for the code to run correctly.**
 
-The Unified Parkinson's Disease Rating Scale (UPDRS) is a standard scale used to track the progression of Parkinson's disease. This project aims to build regression models that can estimate the `total_UPDRS` score based on a set of 19 vocal features extracted from voice recordings.
+## Project Goal
 
-The core of this laboratory exercise involves:
-1.  **Data Preparation:** Loading the Parkinson's dataset, selecting relevant features, shuffling the data, and splitting it into training (50%), validation (25%), and test (25%) sets. Normalization is performed based on the statistics of the true training set.
-2.  **K-Nearest Neighbors LLS (K-NN LLS):**
-    *   For each point in the validation set (and later, the test set), its K nearest neighbors from the true training set are identified.
-    *   A local Linear Least Squares (LLS) model (specifically, ridge regression for stability) is trained using only these K neighbors.
-    *   The optimal value of K (`K_opt`) is determined by evaluating the Mean Squared Error (MSE) on the validation set for different K values.
-3.  **Standard Linear Least Squares (LLS):**
-    *   A global LLS model (ridge regression) is trained using a larger portion of the data (75% - combining the true training and validation sets).
-    *   Predictions are made on the test set.
-4.  **Model Evaluation and Comparison:** The performance of the K-NN LLS model (with `K_opt`) and the standard LLS model are evaluated and compared on the test set using metrics such as Mean Squared Error (MSE), Mean Error, Standard Deviation of Error, Correlation Coefficient, and R-squared.
+The primary goal is to implement and evaluate two distinct data preprocessing and modeling strategies for predicting the `total_UPDRS` score. The performance of these approaches is compared based on Mean Squared Error (MSE) and R-squared (R²) metrics on a held-out test set.
 
-## Key Libraries Used
+## Approaches Compared
 
-*   **NumPy:** For numerical operations, especially array manipulations and linear algebra.
-*   **Pandas:** For data loading (CSV file), data manipulation, and creating DataFrames.
-*   **Matplotlib:** For creating static, animated, and interactive visualizations (e.g., scatter plots, histograms, MSE vs. K plots).
-*   **SciPy:** Specifically, `scipy.spatial.distance.cdist` is used for efficiently calculating the distance matrix between sets of points, crucial for the K-NN 
+1.  **Approach 1: K-NN Local Ridge Regression**
+    *   **Preprocessing:**
+        *   Data is shuffled.
+        *   Normalization (mean/std scaling) is applied to all numeric features based on the training set statistics.
+        *   Target variable (`total_UPDRS`) is also normalized using these global training set statistics.
+        *   Specific features (`subject#`, `Jitter:DDP`, `Shimmer:DDA`, and the target itself) are dropped *after* normalization to create the feature set.
+    *   **Modeling:**
+        *   A K-Nearest Neighbors (K-NN) like approach is used. For each point in the validation/test set:
+            *   Its `K` nearest neighbors are found in the training set.
+            *   A local Ridge Regression model is trained using only these `K` neighbors.
+            *   This local model then predicts the target for the point.
+        *   The optimal value of `K` is determined by evaluating MSE on a validation set.
+    *   **Evaluation:** Performance is measured on a test set using the optimized `K`.
+
+2.  **Approach 2: Global Ridge Regression**
+    *   **Preprocessing:**
+        *   An explicit list of pre-selected features is used.
+        *   Rows with any NaN values in the selected columns are dropped.
+        *   Data is shuffled.
+        *   Features are normalized using the mean and standard deviation from the training set's features.
+        *   The target variable (`total_UPDRS`) is normalized separately using its own mean and standard deviation from the training set.
+    *   **Modeling:**
+        *   A single, global Ridge Regression model is trained on the entire (normalized) training set.
+    *   **Evaluation:** Performance is measured on a test set.
 
   [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1wdZXMTW6cRrquoB0BfWGQHZcSE_gRJZ6?usp=sharing)
